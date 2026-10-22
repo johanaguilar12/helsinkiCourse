@@ -1,16 +1,12 @@
-# React + Vite
+# Notes
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This example loads its initial notes from JSON Server and demonstrates adding notes locally and filtering important notes.
 
-Currently, two official plugins are available:
+Run the API and the React app in separate terminals from this directory:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm run server
+npm run dev
+```
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The API serves the notes at `http://localhost:3001/notes`. New notes are currently kept only in the app's state and are not saved to `db.json`.

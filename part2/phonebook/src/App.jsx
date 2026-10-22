@@ -1,13 +1,27 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import axios from 'axios'
 import { Filter, PersonForm, Persons } from './components/Phonebook'
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456', id: 1 },
-  ])
+  const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
+
+  useEffect(() => {
+    axios
+      .get('http://localhost:3001/persons')
+      .then(response => setPersons(response.data))
+      .catch(error => {
+        console.error('Failed to load persons from the server:', error)
+        setLoadError(
+          'Could not load the phonebook. Make sure the JSON Server is running.'
+        )
+      })
+      .finally(() => setLoading(false))
+  }, [])
 
   const addPerson = event => {
     event.preventDefault()
@@ -40,6 +54,8 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      {loading && <p>Loading phonebook...</p>}
+      {loadError && <p role="alert">{loadError}</p>}
       <Filter value={filter} onChange={setFilter} />
       <h3>Add a new</h3>
       <PersonForm
