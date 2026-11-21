@@ -28,4 +28,16 @@ Endpoints:
 Requests for the VS Code REST Client extension are in `requests/notes.rest`.
 
 To use it with the notes frontend, run `npm start` here and `npm run dev` in
-`part2/exampleapp`. The frontend calls `http://localhost:3001/api/notes`.
+`part2/exampleapp`. In development, the frontend proxies `/api` requests to
+this backend.
+
+To build the frontend into this backend's `dist` directory, run:
+
+```bash
+npm run build:ui
+```
+
+Once built, Express serves the frontend at `/` and continues to serve the API
+under `/api/notes`. For Render, use `part3/notes-backend` as the root directory,
+`npm install && npm run build:ui` as the build command, and `npm start` as the
+start command.

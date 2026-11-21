@@ -18,3 +18,7 @@ npm run dev
 The API is available at `http://localhost:3001/api/notes`. The backend stores
 notes in memory, so changes reset when it restarts. Importance updates are not
 implemented in the backend yet.
+
+The Vite development server proxies `/api` requests to the backend on port
+3001. In production, the backend serves the frontend build from its `dist`
+directory.

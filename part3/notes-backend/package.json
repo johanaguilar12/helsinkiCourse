@@ -4,7 +4,8 @@
   "description": "A simple Express backend for the Full Stack Open notes application",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "build:ui": "cd ../../part2/exampleapp && npm ci && npm run build && rm -rf ../../part3/notes-backend/dist && cp -R dist ../../part3/notes-backend/dist"
   },
   "license": "MIT",
   "dependencies": {
