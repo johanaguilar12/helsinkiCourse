@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import axios from 'axios'
 import Note from './components/Note'
+import noteService from './services/notes'
 
 const App = () => {
   const [noteList, setNoteList] = useState([])
@@ -10,9 +10,9 @@ const App = () => {
   const [loadError, setLoadError] = useState('')
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/notes')
-      .then(response => setNoteList(response.data))
+    noteService
+      .getAll()
+      .then(initialNotes => setNoteList(initialNotes))
       .catch(error => {
         console.error('Failed to load notes from the server:', error)
         setLoadError('Could not load notes. Make sure the JSON Server is running.')
@@ -26,11 +26,37 @@ const App = () => {
     const noteObject = {
       content: newNote,
       important: Math.random() < 0.5,
-      id: Math.max(0, ...noteList.map(note => note.id)) + 1,
     }
 
-    setNoteList(noteList.concat(noteObject))
-    setNewNote('')
+    noteService
+      .create(noteObject)
+      .then(returnedNote => {
+        setNoteList(noteList.concat(returnedNote))
+        setNewNote('')
+      })
+      .catch(error => {
+        console.error('Failed to save the note:', error)
+        window.alert('Could not save the note')
+      })
+  }
+
+  const toggleImportanceOf = id => {
+    const note = noteList.find(currentNote => currentNote.id === id)
+    const changedNote = { ...note, important: !note.important }
+
+    noteService
+      .update(id, changedNote)
+      .then(returnedNote => {
+        setNoteList(
+          noteList.map(currentNote =>
+            currentNote.id !== id ? currentNote : returnedNote
+          )
+        )
+      })
+      .catch(error => {
+        console.error('Failed to update the note:', error)
+        window.alert(`The note '${note.content}' could not be updated`)
+      })
   }
 
   const notesToShow = showAll
@@ -47,7 +73,11 @@ const App = () => {
       </button>
       <ul>
         {notesToShow.map(note => (
-          <Note key={note.id} note={note} />
+          <Note
+            key={note.id}
+            note={note}
+            toggleImportance={() => toggleImportanceOf(note.id)}
+          />
         ))}
       </ul>
       <form onSubmit={addNote}>

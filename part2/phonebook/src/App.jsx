@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import axios from 'axios'
 import { Filter, PersonForm, Persons } from './components/Phonebook'
+import personService from './services/persons'
 
 const App = () => {
   const [persons, setPersons] = useState([])
@@ -11,9 +11,9 @@ const App = () => {
   const [loadError, setLoadError] = useState('')
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => setPersons(response.data))
+    personService
+      .getAll()
+      .then(initialPersons => setPersons(initialPersons))
       .catch(error => {
         console.error('Failed to load persons from the server:', error)
         setLoadError(
@@ -39,12 +39,19 @@ const App = () => {
     const person = {
       name: normalizedName,
       number: newNumber.trim(),
-      id: Math.max(0, ...persons.map(person => person.id)) + 1,
     }
 
-    setPersons(persons.concat(person))
-    setNewName('')
-    setNewNumber('')
+    personService
+      .create(person)
+      .then(returnedPerson => {
+        setPersons(persons.concat(returnedPerson))
+        setNewName('')
+        setNewNumber('')
+      })
+      .catch(error => {
+        console.error('Failed to save the person:', error)
+        window.alert('Could not save the person')
+      })
   }
 
   const personsToShow = persons.filter(person =>
