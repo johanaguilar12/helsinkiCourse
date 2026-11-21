@@ -1,12 +1,20 @@
 # Notes
 
-This example loads its initial notes from JSON Server and demonstrates adding notes locally and filtering important notes.
+This example loads notes from the Express backend in `part3/notes-backend` and
+demonstrates adding notes and filtering important notes.
 
-Run the API and the React app in separate terminals from this directory:
+Run the backend and the React app in separate terminals:
 
 ```bash
-npm run server
+cd part3/notes-backend
+npm start
+```
+
+```bash
+cd part2/exampleapp
 npm run dev
 ```
 
-The API serves the notes at `http://localhost:3001/notes`. New notes are currently kept only in the app's state and are not saved to `db.json`.
+The API is available at `http://localhost:3001/api/notes`. The backend stores
+notes in memory, so changes reset when it restarts. Importance updates are not
+implemented in the backend yet.

@@ -2,6 +2,8 @@
 
 A small Express server for the first backend chapter in Part 3. Notes are stored
 in memory, so restarting the server restores the initial three notes.
+The CORS middleware allows the Part 2 frontend, served from a different local
+port, to access the API.
 
 ```bash
 npm install
@@ -24,3 +26,6 @@ Endpoints:
 - `DELETE /api/notes/:id` — remove a note
 
 Requests for the VS Code REST Client extension are in `requests/notes.rest`.
+
+To use it with the notes frontend, run `npm start` here and `npm run dev` in
+`part2/exampleapp`. The frontend calls `http://localhost:3001/api/notes`.
