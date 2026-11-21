@@ -27,12 +27,38 @@ const App = () => {
     event.preventDefault()
 
     const normalizedName = newName.trim()
-    const nameExists = persons.some(
+    const existingPerson = persons.find(
       person => person.name.toLowerCase() === normalizedName.toLowerCase()
     )
 
-    if (nameExists) {
-      window.alert(`${normalizedName} is already added to phonebook`)
+    if (existingPerson) {
+      const replaceNumber = window.confirm(
+        `${normalizedName} is already added to phonebook, replace the old number with a new one?`
+      )
+
+      if (!replaceNumber) {
+        return
+      }
+
+      const changedPerson = {
+        ...existingPerson,
+        number: newNumber.trim(),
+      }
+
+      personService
+        .update(existingPerson.id, changedPerson)
+        .then(returnedPerson => {
+          setPersons(persons.map(person =>
+            person.id !== existingPerson.id ? person : returnedPerson
+          ))
+          setNewName('')
+          setNewNumber('')
+        })
+        .catch(error => {
+          console.error('Failed to update the person:', error)
+          window.alert('Could not update the person')
+        })
+
       return
     }
 
@@ -51,6 +77,24 @@ const App = () => {
       .catch(error => {
         console.error('Failed to save the person:', error)
         window.alert('Could not save the person')
+      })
+  }
+
+  const deletePerson = id => {
+    const person = persons.find(currentPerson => currentPerson.id === id)
+
+    if (!window.confirm(`Delete ${person.name}?`)) {
+      return
+    }
+
+    personService
+      .remove(id)
+      .then(() => {
+        setPersons(persons.filter(currentPerson => currentPerson.id !== id))
+      })
+      .catch(error => {
+        console.error('Failed to delete the person:', error)
+        window.alert('Could not delete the person')
       })
   }
 
@@ -73,7 +117,7 @@ const App = () => {
         onSubmit={addPerson}
       />
       <h3>Numbers</h3>
-      <Persons persons={personsToShow} />
+      <Persons persons={personsToShow} onDelete={deletePerson} />
     </div>
   )
 }

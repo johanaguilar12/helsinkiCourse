@@ -36,16 +36,21 @@ export const PersonForm = ({
   </form>
 )
 
-const Person = ({ person }) => (
+const Person = ({ person, onDelete }) => (
   <li>
-    {person.name} {person.number}
+    {person.name} {person.number}{' '}
+    <button onClick={onDelete}>delete</button>
   </li>
 )
 
-export const Persons = ({ persons }) => (
+export const Persons = ({ persons, onDelete }) => (
   <ul>
     {persons.map(person => (
-      <Person key={person.id} person={person} />
+      <Person
+        key={person.id}
+        person={person}
+        onDelete={() => onDelete(person.id)}
+      />
     ))}
   </ul>
 )
