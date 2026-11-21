@@ -1,0 +1,17 @@
+body {
+  margin: 24px;
+  font-family: Arial, sans-serif;
+}
+
+ul {
+  margin-top: 8px;
+}
+
+button {
+  margin-left: 6px;
+}
+
+.flag {
+  width: 180px;
+  border: 1px solid #ccc;
+}
