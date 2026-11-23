@@ -32,7 +32,32 @@ const App = () => {
     )
 
     if (existingPerson) {
-      window.alert(`${normalizedName} is already added to phonebook`)
+      const shouldUpdate = window.confirm(
+        `${normalizedName} is already added to phonebook, replace the old number with a new one?`
+      )
+
+      if (!shouldUpdate) {
+        return
+      }
+
+      personService
+        .update(existingPerson.id, {
+          ...existingPerson,
+          number: newNumber.trim(),
+        })
+        .then(updatedPerson => {
+          setPersons(
+            persons.map(person =>
+              person.id === existingPerson.id ? updatedPerson : person
+            )
+          )
+          setNewName('')
+          setNewNumber('')
+        })
+        .catch(error => {
+          console.error('Failed to update the person:', error)
+          window.alert('Could not update the person')
+        })
       return
     }
 
