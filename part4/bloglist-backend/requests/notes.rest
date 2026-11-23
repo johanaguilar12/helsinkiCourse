@@ -13,8 +13,7 @@ Content-Type: application/json
 GET http://localhost:3003/api/blogs
 
 ###
-# Copy an id from the GET response into blogId before sending PUT or DELETE.
-@blogId = REPLACE_WITH_BLOG_ID
+@blogId = 6b047e21c75b0a9efbde64e4
 
 ###
 PUT http://localhost:3003/api/blogs/{{blogId}}
