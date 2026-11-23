@@ -25,8 +25,19 @@ const initializeBlogs = async () => {
   await Blog.insertMany(initialBlogs)
 }
 
+const nonExistingId = async () => {
+  const blog = await Blog.create({
+    title: 'Temporary blog',
+    author: 'Test Author',
+    url: 'https://example.com/temporary',
+  })
+  await Blog.findByIdAndDelete(blog.id)
+  return blog.id
+}
+
 module.exports = {
   blogsInDb,
   initialBlogs,
   initializeBlogs,
+  nonExistingId,
 }
