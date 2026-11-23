@@ -1,5 +1,37 @@
 
+### Create a user (run once)
+POST http://localhost:3003/api/users
+Content-Type: application/json
+
+{
+  "username": "demo",
+  "name": "Demo User",
+  "password": "demo-password"
+}
+
+###
+# @name login
+POST http://localhost:3003/api/login
+Content-Type: application/json
+
+{
+  "username": "demo",
+  "password": "demo-password"
+}
+
+###
+@token = {{login.response.body.token}}
+
+###
+GET http://localhost:3003/api/users
+
+###
+GET http://localhost:3003/api/blogs
+
+###
+# @name createBlog
 POST http://localhost:3003/api/blogs
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -10,13 +42,7 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost:3003/api/blogs
-
-###
-@blogId = 6b047e21c75b0a9efbde64e4
-
-###
-PUT http://localhost:3003/api/blogs/{{blogId}}
+PUT http://localhost:3003/api/blogs/{{createBlog.response.body.id}}
 Content-Type: application/json
 
 {
@@ -24,4 +50,5 @@ Content-Type: application/json
 }
 
 ###
-DELETE http://localhost:3003/api/blogs/{{blogId}}
+DELETE http://localhost:3003/api/blogs/{{createBlog.response.body.id}}
+Authorization: Bearer {{token}}
