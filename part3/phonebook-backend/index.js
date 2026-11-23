@@ -23,9 +23,7 @@ const requestLogger = (request, response, next) => {
 
 app.use(requestLogger)
 
-morgan.token('body', request =>
-  request.method === 'POST' ? JSON.stringify(request.body) : ''
-)
+morgan.token('body', request => request.method === 'POST' ? JSON.stringify(request.body) : '')
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 app.get('/api/persons', async (request, response) => {

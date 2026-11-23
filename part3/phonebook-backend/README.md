@@ -14,6 +14,12 @@ For development with automatic restarts:
 npm run dev
 ```
 
+Check the backend code with ESLint:
+
+```bash
+npm run lint
+```
+
 The default port is 3001. If another project is already using it, use a
 different port, for example:
 
