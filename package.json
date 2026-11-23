@@ -1,0 +1,8 @@
+{
+  "name": "helsinki-course",
+  "private": true,
+  "scripts": {
+    "build:ui": "npm --prefix part3/phonebook-backend install && npm --prefix part2/phonebook ci && npm --prefix part2/phonebook run build && rm -rf part3/phonebook-backend/dist && cp -R part2/phonebook/dist part3/phonebook-backend/dist",
+    "start": "npm --prefix part3/phonebook-backend start"
+  }
+}
