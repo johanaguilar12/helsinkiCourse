@@ -1,13 +1,37 @@
-GET http://localhost:3001/
+### Create a user (run once)
+POST http://localhost:3001/api/users
+Content-Type: application/json
+
+{
+  "username": "demo",
+  "name": "Demo User",
+  "password": "demo-password"
+}
+
+###
+# Log in and use the returned token for protected requests.
+# @name login
+POST http://localhost:3001/api/login
+Content-Type: application/json
+
+{
+  "username": "demo",
+  "password": "demo-password"
+}
+
+###
+@token = {{login.response.body.token}}
+
+###
+GET http://localhost:3001/api/users
 
 ###
 GET http://localhost:3001/api/notes
 
 ###
-GET http://localhost:3001/api/notes/1
-
-###
+# @name createNote
 POST http://localhost:3001/api/notes
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -16,4 +40,14 @@ Content-Type: application/json
 }
 
 ###
-DELETE http://localhost:3001/api/notes/2
+PUT http://localhost:3001/api/notes/{{createNote.response.body.id}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "important": false
+}
+
+###
+DELETE http://localhost:3001/api/notes/{{createNote.response.body.id}}
+Authorization: Bearer {{token}}
