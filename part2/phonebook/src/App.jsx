@@ -56,7 +56,9 @@ const App = () => {
         })
         .catch(error => {
           console.error('Failed to update the person:', error)
-          window.alert('Could not update the person')
+          window.alert(
+            error.response?.data?.error || 'Could not update the person'
+          )
         })
       return
     }
@@ -75,7 +77,7 @@ const App = () => {
       })
       .catch(error => {
         console.error('Failed to save the person:', error)
-        window.alert('Could not save the person')
+        window.alert(error.response?.data?.error || 'Could not save the person')
       })
   }
 
