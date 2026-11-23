@@ -32,3 +32,12 @@ Endpoints:
 Request samples are in `requests/persons.rest`. Morgan logs requests in tiny
 format and includes POST bodies for the exercise; do not log sensitive data in
 production.
+
+To build the frontend and serve it from this backend, run:
+
+```bash
+npm run build:ui
+npm start
+```
+
+In development, Vite proxies `/api` requests to `http://localhost:3001`.

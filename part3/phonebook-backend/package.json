@@ -5,10 +5,12 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "build:ui": "cd ../../part2/phonebook && npm ci && npm run build && rm -rf ../../part3/phonebook-backend/dist && cp -R dist ../../part3/phonebook-backend/dist"
   },
   "license": "MIT",
   "dependencies": {
+    "cors": "^2.8.6",
     "express": "^5.3.0",
     "morgan": "^1.12.1"
   },

@@ -1,7 +1,10 @@
 const express = require('express')
 const morgan = require('morgan')
+const cors = require('cors')
 
 const app = express()
+
+app.use(cors())
 
 let persons = [
   {
@@ -27,6 +30,7 @@ let persons = [
 ]
 
 app.use(express.json())
+app.use(express.static('dist'))
 
 const requestLogger = (request, response, next) => {
   console.log('Method:', request.method)

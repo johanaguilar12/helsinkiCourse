@@ -17,7 +17,7 @@ const App = () => {
       .catch(error => {
         console.error('Failed to load persons from the server:', error)
         setLoadError(
-          'Could not load the phonebook. Make sure the JSON Server is running.'
+          'Could not load the phonebook. Make sure the backend is running.'
         )
       })
       .finally(() => setLoading(false))
@@ -32,33 +32,7 @@ const App = () => {
     )
 
     if (existingPerson) {
-      const replaceNumber = window.confirm(
-        `${normalizedName} is already added to phonebook, replace the old number with a new one?`
-      )
-
-      if (!replaceNumber) {
-        return
-      }
-
-      const changedPerson = {
-        ...existingPerson,
-        number: newNumber.trim(),
-      }
-
-      personService
-        .update(existingPerson.id, changedPerson)
-        .then(returnedPerson => {
-          setPersons(persons.map(person =>
-            person.id !== existingPerson.id ? person : returnedPerson
-          ))
-          setNewName('')
-          setNewNumber('')
-        })
-        .catch(error => {
-          console.error('Failed to update the person:', error)
-          window.alert('Could not update the person')
-        })
-
+      window.alert(`${normalizedName} is already added to phonebook`)
       return
     }
 
