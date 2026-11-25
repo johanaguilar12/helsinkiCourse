@@ -1,29 +1,32 @@
 import axios from 'axios'
-
 const baseUrl = '/api/notes'
+
 let token = null
 
-const authConfig = () => token
-  ? { headers: { Authorization: `Bearer ${token}` } }
-  : {}
+const setToken = newToken => {
+  token = newToken ? `Bearer ${newToken}` : null
+}
 
 const getAll = () => {
   const request = axios.get(baseUrl)
   return request.then(response => response.data)
 }
 
-const create = newObject => {
-  const request = axios.post(baseUrl, newObject, authConfig())
-  return request.then(response => response.data)
+const create = async newObject => {
+  const config = {
+    headers: { Authorization: token },
+  }
+
+  const response = await axios.post(baseUrl, newObject, config)
+  return response.data
 }
 
 const update = (id, newObject) => {
-  const request = axios.put(`${baseUrl}/${id}`, newObject, authConfig())
+  const config = token
+    ? { headers: { Authorization: token } }
+    : undefined
+  const request = axios.put(`${baseUrl}/${id}`, newObject, config)
   return request.then(response => response.data)
-}
-
-const setToken = newToken => {
-  token = newToken
 }
 
 export default { getAll, create, update, setToken }

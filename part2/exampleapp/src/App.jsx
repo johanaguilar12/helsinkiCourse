@@ -1,230 +1,170 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import Note from './components/Note'
+import Notification from './components/Notification'
+import Footer from './components/Footer'
 import noteService from './services/notes'
-import userService from './services/users'
+import loginService from './services/login'
 
 const App = () => {
-  const [noteList, setNoteList] = useState([])
+  const [notes, setNotes] = useState([])
   const [newNote, setNewNote] = useState('')
   const [showAll, setShowAll] = useState(true)
-  const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState('')
-  const [user, setUser] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
   const [username, setUsername] = useState('')
-  const [name, setName] = useState('')
   const [password, setPassword] = useState('')
-  const [registering, setRegistering] = useState(false)
-  const [authError, setAuthError] = useState('')
-  const [users, setUsers] = useState([])
-  const [usersError, setUsersError] = useState('')
-
-  const refreshUsers = useCallback(() => userService
-    .getAll()
-    .then(registeredUsers => {
-      setUsers(registeredUsers)
-      setUsersError('')
-    })
-    .catch(error => {
-      console.error('Failed to load users:', error)
-      setUsersError('Could not load users from the server.')
-    }), [])
+  const [user, setUser] = useState(null)
 
   useEffect(() => {
     noteService
       .getAll()
-      .then(initialNotes => setNoteList(initialNotes))
-      .catch(error => {
-        console.error('Failed to load notes from the server:', error)
-        setLoadError('Could not load notes. Make sure the Notes backend is running.')
+      .then(initialNotes => {
+        setNotes(initialNotes)
       })
-      .finally(() => setLoading(false))
-    refreshUsers()
-  }, [refreshUsers])
+  }, [])
+
+  useEffect(() => {
+    const loggedUserJSON = window.localStorage.getItem('loggedNoteappUser')
+    if (loggedUserJSON) {
+      const user = JSON.parse(loggedUserJSON)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setUser(user)
+      noteService.setToken(user.token)
+    }
+  }, [])
 
   const addNote = event => {
     event.preventDefault()
-
     const noteObject = {
       content: newNote,
-      important: Math.random() < 0.5,
+      important: Math.random() > 0.5,
     }
 
     noteService
       .create(noteObject)
       .then(returnedNote => {
-        setNoteList(currentNotes => currentNotes.concat(returnedNote))
+        setNotes(notes.concat(returnedNote))
         setNewNote('')
-        refreshUsers()
       })
       .catch(error => {
-        console.error('Failed to save the note:', error)
-        setLoadError(error.response?.data?.error || 'Could not save the note')
+        setErrorMessage(error.response?.data?.error || 'could not create note')
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000)
       })
   }
 
   const toggleImportanceOf = id => {
-    const note = noteList.find(currentNote => currentNote.id === id)
+    const note = notes.find(n => n.id === id)
     const changedNote = { ...note, important: !note.important }
 
     noteService
       .update(id, changedNote)
       .then(returnedNote => {
-        setNoteList(currentNotes =>
-          currentNotes.map(currentNote =>
-            currentNote.id !== id ? currentNote : returnedNote
-          )
-        )
-        refreshUsers()
+        setNotes(notes.map(note => (note.id !== id ? note : returnedNote)))
       })
       .catch(error => {
-        console.error('Failed to update the note:', error)
-        setLoadError(error.response?.data?.error || `The note '${note.content}' could not be updated`)
+        setErrorMessage(
+          error.response?.data?.error || `Note '${note.content}' was already removed from server`
+        )
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000)
       })
   }
 
-  const handleAuthentication = async event => {
+  const handleNoteChange = event => {
+    setNewNote(event.target.value)
+  }
+
+  const handleLogin = async event => {
     event.preventDefault()
-    setAuthError('')
 
     try {
-      if (registering) {
-        await userService.create({ username, name, password })
-      }
+      const user = await loginService.login({ username, password })
 
-      const authenticatedUser = await userService.login({ username, password })
-      noteService.setToken(authenticatedUser.token)
-      setUser(authenticatedUser)
-      await refreshUsers()
+      window.localStorage.setItem(
+        'loggedNoteappUser', JSON.stringify(user)
+      )
+      noteService.setToken(user.token)
+      setUser(user)
       setUsername('')
-      setName('')
       setPassword('')
-    } catch (error) {
-      console.error('Authentication failed:', error)
-      setAuthError(error.response?.data?.error || 'Authentication failed')
+    } catch {
+      setErrorMessage('wrong credentials')
+      setTimeout(() => {
+        setErrorMessage(null)
+      }, 5000)
     }
   }
 
-  const logout = () => {
-    noteService.setToken(null)
-    setUser(null)
-  }
-
   const notesToShow = showAll
-    ? noteList
-    : noteList.filter(note => note.important)
+    ? notes
+    : notes.filter(note => note.important)
+
+  const loginForm = () => (
+    <form onSubmit={handleLogin}>
+      <div>
+        <label>
+          username
+          <input
+            type="text"
+            value={username}
+            onChange={({ target }) => setUsername(target.value)}
+          />
+        </label>
+      </div>
+      <div>
+        <label>
+          password
+          <input
+            type="password"
+            value={password}
+            onChange={({ target }) => setPassword(target.value)}
+          />
+        </label>
+      </div>
+      <button type="submit">login</button>
+    </form>
+  )
+
+  const noteForm = () => (
+    <form onSubmit={addNote}>
+      <input
+        value={newNote}
+        onChange={handleNoteChange}
+      />
+      <button type="submit">save</button>
+    </form>
+  )
 
   return (
     <div>
       <h1>Notes</h1>
-      {loading && <p>Loading notes...</p>}
-      {loadError && <p role="alert">{loadError}</p>}
-      {user
-        ? (
-          <p>
-            Signed in as {user.name}{' '}
-            <button onClick={logout}>log out</button>
-          </p>
-        )
-        : (
-          <section>
-            <h2>{registering ? 'Create account' : 'Log in'}</h2>
-            <form onSubmit={handleAuthentication}>
-              <div>
-                <label>
-                  Username
-                  <input
-                    value={username}
-                    onChange={event => setUsername(event.target.value)}
-                    autoComplete="username"
-                  />
-                </label>
-              </div>
-              {registering && (
-                <div>
-                  <label>
-                    Name
-                    <input
-                      value={name}
-                      onChange={event => setName(event.target.value)}
-                      autoComplete="name"
-                    />
-                  </label>
-                </div>
-              )}
-              <div>
-                <label>
-                  Password
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={event => setPassword(event.target.value)}
-                    autoComplete={registering ? 'new-password' : 'current-password'}
-                  />
-                </label>
-              </div>
-              <button type="submit">{registering ? 'create account' : 'log in'}</button>
-            </form>
-            {authError && <p role="alert">{authError}</p>}
-            <button onClick={() => {
-              setRegistering(!registering)
-              setAuthError('')
-            }}>
-              {registering ? 'back to login' : 'create a new account'}
-            </button>
-          </section>
-        )}
-      <button onClick={() => setShowAll(!showAll)}>
-        show {showAll ? 'important' : 'all'}
-      </button>
+      <Notification message={errorMessage} />
+
+      {!user && loginForm()}
+      {user && (
+        <div>
+          <p>{user.name} logged in</p>
+          {noteForm()}
+        </div>
+      )}
+
+      <div>
+        <button onClick={() => setShowAll(!showAll)}>
+          show {showAll ? 'important' : 'all'}
+        </button>
+      </div>
       <ul>
         {notesToShow.map(note => (
           <Note
             key={note.id}
             note={note}
-            toggleImportance={user?.id === note.user?.id
-              ? () => toggleImportanceOf(note.id)
-              : null}
+            toggleImportance={() => toggleImportanceOf(note.id)}
           />
         ))}
       </ul>
-      {user
-        ? (
-          <form onSubmit={addNote}>
-            <input
-              value={newNote}
-              onChange={event => setNewNote(event.target.value)}
-              aria-label="New note"
-            />
-            <button type="submit">save</button>
-          </form>
-        )
-        : <p>Log in to create notes or change their importance.</p>}
-      <section>
-        <h2>Users and their notes</h2>
-        {usersError && <p role="alert">{usersError}</p>}
-        {users.length === 0 && !usersError
-          ? <p>No registered users yet.</p>
-          : (
-            <ul>
-              {users.map(registeredUser => (
-                <li key={registeredUser.id}>
-                  <strong>{registeredUser.name}</strong> (@{registeredUser.username})
-                  {registeredUser.notes.length === 0
-                    ? <p>No notes yet.</p>
-                    : (
-                      <ul>
-                        {registeredUser.notes.map(note => (
-                          <li key={note.id}>
-                            {note.content} ({note.important ? 'important' : 'not important'})
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                </li>
-              ))}
-            </ul>
-          )}
-      </section>
+      <Footer />
     </div>
   )
 }
