@@ -45,10 +45,18 @@ blogsRouter.delete('/:id', userExtractor, async (request, response) => {
 })
 
 blogsRouter.put('/:id', async (request, response) => {
-  const { title, author, url, likes } = request.body || {}
+  const { title, author, url, likes, user } = request.body || {}
+  const updateData = { title, author, url, likes }
+
+  if (user !== undefined) {
+    updateData.user = typeof user === 'object' && user !== null
+      ? user.id || user._id
+      : user
+  }
+
   const updatedBlog = await Blog.findByIdAndUpdate(
     request.params.id,
-    { title, author, url, likes },
+    updateData,
     { new: true, runValidators: true, context: 'query' }
   )
 

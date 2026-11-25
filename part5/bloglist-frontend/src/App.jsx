@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import Blog from './components/Blog'
+import BlogForm from './components/BlogForm'
 import Notification from './components/Notification'
+import Togglable from './components/Togglable'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
@@ -9,11 +11,9 @@ const App = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
-  const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
-  const [url, setUrl] = useState('')
   const [notification, setNotification] = useState(null)
   const notificationTimeoutRef = useRef(null)
+  const blogFormRef = useRef()
 
   const notify = (message, type = 'success') => {
     if (notificationTimeoutRef.current) {
@@ -69,22 +69,50 @@ const App = () => {
     setUser(null)
   }
 
-  const addBlog = async event => {
-    event.preventDefault()
-
+  const addBlog = async blogObject => {
     try {
-      const returnedBlog = await blogService.create({
-        title,
-        author,
-        url,
-      })
+      const returnedBlog = await blogService.create(blogObject)
+      blogFormRef.current.toggleVisibility()
       setBlogs(blogs.concat(returnedBlog))
-      setTitle('')
-      setAuthor('')
-      setUrl('')
       notify(`a new blog ${returnedBlog.title} by ${returnedBlog.author} added`, 'success')
     } catch (error) {
       notify(error.response?.data?.error || 'failed to create blog', 'error')
+    }
+  }
+
+  const handleLike = async blog => {
+    try {
+      const updatedBlogData = {
+        user: blog.user?.id || blog.user,
+        likes: blog.likes + 1,
+        author: blog.author,
+        title: blog.title,
+        url: blog.url
+      }
+
+      const returnedBlog = await blogService.update(blog.id, updatedBlogData)
+      const blogWithUser = returnedBlog.user && typeof returnedBlog.user === 'object'
+        ? returnedBlog
+        : { ...returnedBlog, user: blog.user }
+
+      setBlogs(blogs.map(b => (b.id !== blog.id ? b : blogWithUser)))
+    } catch (error) {
+      notify(error.response?.data?.error || 'failed to update blog', 'error')
+    }
+  }
+
+  const handleRemove = async blog => {
+    const confirmed = window.confirm(`Remove blog ${blog.title} by ${blog.author}`)
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      await blogService.remove(blog.id)
+      setBlogs(blogs.filter(b => b.id !== blog.id))
+      notify(`Removed blog ${blog.title} by ${blog.author}`, 'success')
+    } catch (error) {
+      notify(error.response?.data?.error || 'failed to remove blog', 'error')
     }
   }
 
@@ -120,6 +148,8 @@ const App = () => {
     )
   }
 
+  const sortedBlogs = [...blogs].sort((a, b) => b.likes - a.likes)
+
   return (
     <div>
       <h2>blogs</h2>
@@ -129,43 +159,18 @@ const App = () => {
         <button onClick={handleLogout}>logout</button>
       </p>
 
-      <h2>create new</h2>
-      <form onSubmit={addBlog}>
-        <div>
-          <label>
-            title:
-            <input
-              type="text"
-              value={title}
-              onChange={({ target }) => setTitle(target.value)}
-            />
-          </label>
-        </div>
-        <div>
-          <label>
-            author:
-            <input
-              type="text"
-              value={author}
-              onChange={({ target }) => setAuthor(target.value)}
-            />
-          </label>
-        </div>
-        <div>
-          <label>
-            url:
-            <input
-              type="text"
-              value={url}
-              onChange={({ target }) => setUrl(target.value)}
-            />
-          </label>
-        </div>
-        <button type="submit">create</button>
-      </form>
+      <Togglable buttonLabel="create new blog" ref={blogFormRef}>
+        <BlogForm createBlog={addBlog} />
+      </Togglable>
 
-      {blogs.map(blog => (
-        <Blog key={blog.id} blog={blog} />
+      {sortedBlogs.map(blog => (
+        <Blog
+          key={blog.id}
+          blog={blog}
+          handleLike={handleLike}
+          handleRemove={handleRemove}
+          canRemove={Boolean(blog.user && blog.user.username === user.username)}
+        />
       ))}
     </div>
   )
