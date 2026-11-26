@@ -7,6 +7,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "cross-env NODE_ENV=test node --test",
+    "start:test": "cross-env NODE_ENV=test node --watch index.js",
     "build:ui": "cd ../../part2/exampleapp && npm ci && npm run build && rm -rf ../../part3/notes-backend/dist && cp -R dist ../../part3/notes-backend/dist"
   },
   "license": "MIT",
