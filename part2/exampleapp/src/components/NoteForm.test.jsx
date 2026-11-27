@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
 import NoteForm from './NoteForm'
 
@@ -6,9 +7,13 @@ test('<NoteForm /> updates parent state and calls onSubmit', async () => {
   const createNote = vi.fn()
   const user = userEvent.setup()
 
-  render(<NoteForm createNote={createNote} />)
+  render(
+    <MemoryRouter>
+      <NoteForm createNote={createNote} />
+    </MemoryRouter>
+  )
 
-  const input = screen.getByPlaceholderText('write note content here')
+  const input = screen.getByLabelText('note content')
   const sendButton = screen.getByText('save')
 
   await user.type(input, 'testing a form...')
